@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>第四紀学 直前対策〇× 100問</title>
+<style>
+    :root { --primary: #2c3e50; --accent: #e67e22; --correct: #27ae60; --wrong: #c0392b; --bg: #fdfefe; }
+    body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding-bottom: 60px; line-height: 1.6; }
+    
+    /* Header */
+    header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    h1 { margin: 0; font-size: 1.3rem; }
+    .status-bar { font-size: 0.9rem; margin-top: 5px; opacity: 0.9; }
+
+    /* Container */
+    .container { max-width: 700px; margin: 20px auto; padding: 0 15px; }
+    
+    /* Card */
+    .card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 25px; margin-bottom: 20px; animation: slideIn 0.3s ease-out; border-top: 5px solid var(--accent); }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .q-meta { font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; text-transform: uppercase; }
+    .q-text { font-size: 1.25rem; font-weight: bold; margin: 15px 0 30px; line-height: 1.5; }
+
+    /* Buttons (True/False) */
+    .choices { display: flex; gap: 15px; }
+    .choice-btn { 
+        flex: 1; padding: 20px; border: 2px solid #e9ecef; border-radius: 10px; background: #fff; 
+        text-align: center; font-size: 2rem; cursor: pointer; transition: all 0.2s; font-weight: bold; color: var(--primary);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .choice-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .choice-btn:active { transform: scale(0.98); }
+
+    /* Colors for O/X */
+    .btn-o { color: #27ae60; border-color: #27ae60; }
+    .btn-x { color: #c0392b; border-color: #c0392b; }
+
+    /* Results */
+    .choice-btn.correct { background-color: var(--correct); color: white; border-color: var(--correct); }
+    .choice-btn.wrong { background-color: var(--wrong); color: white; border-color: var(--wrong); opacity: 0.5; }
+    .choice-btn.dimmed { opacity: 0.3; pointer-events: none; }
+
+    /* Explanation */
+    .explanation { display: none; margin-top: 25px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 5px solid var(--accent); font-size: 1rem; }
+    .btn-next { display: block; width: 100%; margin-top: 20px; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold; }
+    .btn-next:hover { background: #34495e; }
+
+    /* Score Screen */
+    .result-screen { text-align: center; padding: 40px 20px; }
+    .score-circle { width: 160px; height: 160px; background: var(--accent); color: white; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 0 auto 30px; box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4); }
+    .score-num { font-size: 3rem; font-weight: bold; line-height: 1; }
+    .score-label { font-size: 0.9rem; opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>第四紀学 直前対策 〇×</h1>
+    <div class="status-bar" id="status">読込中...</div>
+</header>
+
+<div class="container" id="app"></div>
+
+<script>
+// ==========================================
+//  100問の〇×データ
+//  ※配列の [0] 番目が正解になるように記述しています
+//  （表示時にシャッフルはせず、〇か×かの配置は固定またはランダムに処理）
+// ==========================================
+const quizData = [
+    // --- 第1章：テフラ・火山 ---
+    { cat: "テフラ", q: "火山灰アトラスにおいて、鉱物記号「opx」は「斜方輝石 (Orthopyroxene)」を指す。", a: ["〇", "×"], exp: "正しい。ちなみに「cpx」は単斜輝石、「ho」は角閃石、「qt」は石英を指します。" },
+    { cat: "テフラ", q: "火山灰アトラスの記載で、鉱物記号「ol」は「オパール (Opal)」のことである。", a: ["×", "〇"], exp: "間違い。「ol」はカンラン石 (Olivine) を指します。" },
+    { cat: "テフラ", q: "テフラを同定する際の「3つの決め手」とは、「層位」「鉱物組成」「屈折率」である。", a: ["〇", "×"], exp: "正しい。これら3つの要素を総合して、アトラス（カタログ）と照合し同定します。" },
+    { cat: "テフラ", q: "火山ガラスの屈折率（Refractive Index）は、すべてのテフラで「1.500」と一定の値を示す。", a: ["×", "〇"], exp: "間違い。テフラごとに固有の値（モード）を持ち、例えば1.498-1.501のように範囲で示され、同定の決め手となります。" },
+    { cat: "テフラ", q: "「プリニー式噴火」は、噴煙柱が成層圏まで達し、広範囲にテフラを降らせる大規模な噴火様式である。", a: ["〇", "×"], exp: "正しい。粉砕度(F)と拡散度(D)が共に高い噴火です。" },
+    { cat: "テフラ", q: "「水蒸気プリニー式噴火」は、マグマが海水や湖水と接触して急冷され、爆発的に微細に破砕される現象である。", a: ["〇", "×"], exp: "正しい。非常に細かい粒子（高い粉砕度）になるのが特徴です。" },
+    { cat: "テフラ", q: "「溶結凝灰岩（Welded Tuff）」は、降下軽石が水中で堆積して固まったものである。", a: ["×", "〇"], exp: "間違い。高温の火砕流が厚く堆積し、自重と熱でガラス片同士が再融着（溶結）してできた岩石です。" },
+    { cat: "テフラ", q: "広域テフラ「K-Ah」の正式名称は「鬼界アカホヤ火山灰」である。", a: ["〇", "×"], exp: "正しい。約7300年前の噴火で、西日本から東北地方まで分布します。" },
+    { cat: "テフラ", q: "広域テフラ「AT」の正式名称は「阿蘇4火山灰」である。", a: ["×", "〇"], exp: "間違い。「AT」は姶良Tn火山灰（約3万年前）です。阿蘇4は「Aso-4」（約9万年前）です。" },
+    { cat: "テフラ", q: "大阪層群の「アズキ火山灰」は、地磁気の「松山－ブリュンヌ逆転境界（M-B境界）」よりも新しい（上位にある）。", a: ["×", "〇"], exp: "間違い。アズキ火山灰（約85万年前）は、M-B境界（約78万年前）よりも古く、下位にあります。" },
+    { cat: "テフラ", q: "「ベースサージ」は、火砕流よりも密度が低く、爆発の衝撃で地表を高速で横に広がる現象である。", a: ["〇", "×"], exp: "正しい。火砕サージの一種です。" },
+    { cat: "テフラ", q: "降下軽石（Pumice）は一般に黒っぽく、降下スコリア（Scoria）は白っぽい色をしている。", a: ["×", "〇"], exp: "逆です。軽石は酸性で白っぽく、スコリアは鉄分を含むため黒っぽい色をしています。" },
+    { cat: "テフラ", q: "「イグニムブライト」とは、大規模な軽石流堆積物の総称である。", a: ["〇", "×"], exp: "正しい。溶結凝灰岩を含む火砕流堆積物を広く指す言葉です。" },
+    { cat: "テフラ", q: "火山灰アトラスにおいて、屈折率を示す「n」は斜方輝石の屈折率を表している。", a: ["×", "〇"], exp: "間違い。「n」は通常、火山ガラスの屈折率を表します。斜方輝石は「γ」などで表されます。" },
+    { cat: "テフラ", q: "テフラは瞬時に広範囲に堆積するため、離れた地域同士の地層の同時性を証明する「鍵層」として有効である。", a: ["〇", "×"], exp: "正しい。これをテフラ編年（Tephrochronology）と呼びます。" },
+
+    // --- 第2章：年代測定法 ---
+    { cat: "年代測定", q: "放射性炭素（C14）は、大気上層で中性子が「炭素（C12）」と衝突して生成される。", a: ["×", "〇"], exp: "間違い。中性子が「窒素（N14）」と衝突して陽子を弾き出し、C14が生成されます。" },
+    { cat: "年代測定", q: "C14年代測定において、測定結果の報告（BP）には慣習的に「リビーの半減期（5568年）」を用いて計算する。", a: ["〇", "×"], exp: "正しい。物理的に正確な半減期は5730年ですが、過去のデータとの整合性を保つためリビーの値を使い、その後に暦年較正を行います。" },
+    { cat: "年代測定", q: "C14年代測定で測定できる年代の上限（限界）は、およそ「100万年前」までである。", a: ["×", "〇"], exp: "間違い。半減期が短いため、測定できるのはせいぜい「約5万年前」までです。" },
+    { cat: "年代測定", q: "現在主流の「AMS法（加速器質量分析法）」は、従来法に比べて必要な試料量が圧倒的に少なく（約1mg）、短時間で測定できる。", a: ["〇", "×"], exp: "正しい。炭素原子を直接カウントするため、感度が非常に高いです。" },
+    { cat: "年代測定", q: "C14年代測定の試料として、「地層を貫いている植物の根」は非常に適している。", a: ["×", "〇"], exp: "間違い。根は地層ができた後に上から侵入したもの（新しい炭素）であり、コンタミネーションの原因となるため避けるべきです。" },
+    { cat: "年代測定", q: "測定されたC14年代（BP）を「暦年代（cal BP）」に変換することを「暦年較正（Calibration）」と呼ぶ。", a: ["〇", "×"], exp: "正しい。過去の大気中C14濃度が一定ではないため、IntCalなどの較正曲線を用いて補正します。" },
+    { cat: "年代測定", q: "「海洋リザーバー効果」とは、海洋生物の年代が、同時代の陸上生物よりも「新しく（若く）」測定される現象である。", a: ["×", "〇"], exp: "間違い。深層の古い炭素の影響で、見かけ上「古く」測定されます（日本周辺では約400年程度）。" },
+    { cat: "年代測定", q: "年代値「cal BP」における「現在（Present）」の起点は、西暦2000年である。", a: ["×", "〇"], exp: "間違い。核実験の影響が出る前の「西暦1950年」を起点（0 BP）としています。" },
+    { cat: "年代測定", q: "「ベイズ統計モデリング」を用いると、地層の上下関係（層序）などの事前情報を加味して、年代の誤差幅を絞り込むことができる。", a: ["〇", "×"], exp: "正しい。OxCalなどのソフトを用いてConstrained Age（制約付き年代）を算出します。" },
+    { cat: "年代測定", q: "K-Ar法（カリウム-アルゴン法）は、主に「木片や骨」などの生物遺骸の年代測定に用いられる。", a: ["×", "〇"], exp: "間違い。K-Ar法は「火山岩や鉱物」などの無機物が対象で、数万年〜数億年の古い年代を測ります。" },
+    { cat: "年代測定", q: "C14が生成された後、植物に取り込まれる際は「光合成」のプロセスを経る。", a: ["〇", "×"], exp: "正しい。大気中の二酸化炭素として取り込まれます。" },
+    { cat: "年代測定", q: "生物が死ぬと、体内のC14の供給が止まり、放射性壊変によって減少を始める。", a: ["〇", "×"], exp: "正しい。これを時計として利用するのがC14年代測定法です。" },
+    { cat: "年代測定", q: "同位体分別（Isotopic Fractionation）とは、生物が重い同位体（C14）を好んで取り込む現象のことである。", a: ["×", "〇"], exp: "間違い。生物は軽い同位体（C12）を優先的に取り込むため、そのズレをδ13C値で補正する必要があります。" },
+    { cat: "年代測定", q: "IntCal（イントカル）とは、世界標準の暦年較正曲線のデータセットのことである。", a: ["〇", "×"], exp: "正しい。年輪年代やサンゴ、堆積物などのデータから作成されています。" },
+    { cat: "年代測定", q: "「2000 cal BP」は、西暦2000年のことである。", a: ["×", "〇"], exp: "間違い。1950年から2000年前、つまり「紀元前50年頃」を指します。" },
+
+    // --- 第3章：調査法・コア採取 ---
+    { cat: "調査法", q: "「ハンディジオスライサー」は、地層を乱さずに幅広の試料を採取でき、堆積構造の観察に適している。", a: ["〇", "×"], exp: "正しい。カッター状の箱を打ち込む道具で、津波堆積物の葉理などを観察するのに最適です。" },
+    { cat: "調査法", q: "「ハンドコアラー」は人力で持ち運べるが、採取できる深度は100m以上に達する。", a: ["×", "〇"], exp: "間違い。ハンドコアラーの限界は通常数m〜10m程度です。100m掘るには機械式ボーリングが必要です。" },
+    { cat: "調査法", q: "「トレンチ調査」は、溝を掘って地層の断面を観察する手法で、地層の横方向の連続性を確認できる利点がある。", a: ["〇", "×"], exp: "正しい。活断層調査などで断層の変位を直接見るためによく行われます。" },
+    { cat: "調査法", q: "堆積物コアの記載（ディスクリプション）では、最初から「津波堆積物である」と解釈して記録するのが良い。", a: ["×", "〇"], exp: "間違い。「解釈」ではなく、色・粒度・構造などの客観的な「事実」を記録するのが鉄則です。" },
+    { cat: "調査法", q: "堆積物が「海」で溜まったか「湖」で溜まったかを判定するには、「珪藻（けいそう）」化石の分析が有効である。", a: ["〇", "×"], exp: "正しい。珪藻は塩分濃度に敏感で、海水種・汽水種・淡水種に分かれるためです。" },
+    { cat: "調査法", q: "「ITRAX（コアスキャナー）」は、試料を破壊して粉末にしないと元素分析ができない。", a: ["×", "〇"], exp: "間違い。非破壊で表面をスキャンし、元素組成の連続データを測定できる装置です。" },
+    { cat: "調査法", q: "「CTスキャン」を用いると、コア試料内部の巣穴や堆積構造を非破壊で透視できる。", a: ["〇", "×"], exp: "正しい。医療用と同じ原理で内部密度差を可視化します。" },
+    { cat: "調査法", q: "砂層の粒度分析を行う際、有機物を除去するために「過酸化水素水」を使用する。", a: ["〇", "×"], exp: "正しい。有機物を分解するために用います。" },
+    { cat: "調査法", q: "水月湖（福井県）の堆積物に見られる「年縞（ねんこう）」は、10年で1本の縞模様が形成される。", a: ["×", "〇"], exp: "間違い。季節変化により「1年で1層」形成されるため、極めて高精度な年代決定が可能です。" },
+    { cat: "調査法", q: "ハンディジオスライサーは、砂礫層や硬い岩盤の掘削には不向きである。", a: ["〇", "×"], exp: "正しい。打ち込み式のため、硬い地層や大きな礫がある層には貫入できません。" },
+    { cat: "調査法", q: "コア記載において「淘汰が良い」とは、粒の大きさがバラバラであることを指す。", a: ["×", "〇"], exp: "間違い。淘汰が良い（Well sorted）とは、粒の大きさが揃っている状態を指します。" },
+    { cat: "調査法", q: "海域の活断層調査で行われる「音波探査」は、海底下の地層断面を映像化する手法である。", a: ["〇", "×"], exp: "正しい。反射波を利用して断層のズレなどを可視化します。" },
+    { cat: "調査法", q: "活断層調査の初期段階として、空中写真やLiDAR画像を用いた「変動地形判読」が行われる。", a: ["〇", "×"], exp: "正しい。リニアメント（地形の直線的なズレ）を見つける作業です。" },
+    { cat: "調査法", q: "「級化構造（グレーディング）」とは、地層の下から上に向かって粒径が粗くなる構造のことである。", a: ["×", "〇"], exp: "間違い。通常は下部が粗く、上に向かって細かくなる構造（正級化）を指します。" },
+    { cat: "調査法", q: "洪水時に堤防が決壊して形成される扇状の堆積物を「決壊堆積物（クレバススプレー）」と呼ぶ。", a: ["〇", "×"], exp: "正しい。2019年千曲川の水害などで見られた特徴的な地形です。" },
+
+    // --- 第4章：気候変動・ミランコビッチ ---
+    { cat: "気候", q: "ミランコビッチ・サイクルを構成する3要素は、「離心率」「地軸の傾き」「歳差運動」である。", a: ["〇", "×"], exp: "正しい。これらが組み合わさって日射量を変化させます。" },
+    { cat: "気候", q: "ミランコビッチ・サイクルの「離心率」の変動周期は、約1万年である。", a: ["×", "〇"], exp: "間違い。離心率（公転軌道の形）の周期は「約10万年」です。" },
+    { cat: "気候", q: "地軸の傾き（Obliquity）が大きくなると、高緯度地域の夏の日射量が増え、氷床が融解しやすくなる。", a: ["〇", "×"], exp: "正しい。傾きが大きいほど極域に太陽光が当たりやすくなり、間氷期になりやすくなります。" },
+    { cat: "気候", q: "「歳差運動（Precession）」は、地球の自転軸がコマのように回転する運動で、周期は約2万年である。", a: ["〇", "×"], exp: "正しい。これにより近日点の位置（季節）が変化します。" },
+    { cat: "気候", q: "約100万年前に、気候変動の卓越周期が4万年から10万年に変化したイベントを「中更新世気候変遷（MPT）」と呼ぶ。", a: ["〇", "×"], exp: "正しい。これ以降、氷期・間氷期の振幅が巨大化しました。" },
+    { cat: "気候", q: "地球の平均的なアルベド（反射率）は、およそ80%である。", a: ["×", "〇"], exp: "間違い。地球の平均アルベドは約30%です。80%は新鮮な雪氷の値に近いですが、地球全体ではもっと低いです。" },
+    { cat: "気候", q: "「アイス・アルベド・フィードバック」は、氷床が拡大すると反射率が上がり、さらに寒冷化が進むという正のフィードバックである。", a: ["〇", "×"], exp: "正しい。氷期を加速させる重要なメカニズムです。" },
+    { cat: "気候", q: "深層海洋循環（熱塩循環）の沈み込みは、主に赤道直下の暖かい海域で起こる。", a: ["×", "〇"], exp: "間違い。北大西洋（グリーンランド沖）などの高緯度地域で、冷たく塩分濃度の高い水が沈み込みます。" },
+    { cat: "気候", q: "最終氷期中に繰り返された、数千年スケールの急激な温暖化と寒冷化のサイクルを「D-Oサイクル」と呼ぶ。", a: ["〇", "×"], exp: "正しい。グリーンランド氷床コアで発見されました。" },
+    { cat: "気候", q: "「ハインリッヒ・イベント」とは、大量の氷山が大西洋に流出し、海底に氷河性砕屑物（IRD）を堆積させたイベントのことである。", a: ["〇", "×"], exp: "正しい。これにより海洋循環が停止し、極端な寒冷化が起きます。" },
+    { cat: "気候", q: "「バイポーラ・シーソー」とは、北半球と南半球が同時に温暖化・寒冷化する現象のことである。", a: ["×", "〇"], exp: "間違い。北が寒冷化すると南が温暖化するという「逆位相」の変動を指します。" },
+    { cat: "気候", q: "17世紀後半の「マウンダー極小期」は、太陽黒点が極端に多く観測された時期である。", a: ["×", "〇"], exp: "間違い。黒点がほとんど「観測されなかった」時期で、小氷期の寒冷化の一因とされます。" },
+    { cat: "気候", q: "火山噴火による寒冷化（日傘効果）が長続きするのは、噴煙が「成層圏」まで達した場合である。", a: ["〇", "×"], exp: "正しい。成層圏には雨が降らないため、硫酸エアロゾルが長期間滞留します。" },
+    { cat: "気候", q: "地球の大気循環において、赤道で上昇し緯度30度付近で下降する循環を「ハドレー循環」と呼ぶ。", a: ["〇", "×"], exp: "正しい。熱帯・亜熱帯の気候を支配する循環です。" },
+    { cat: "気候", q: "深海底コアの酸素同位体比（δ18O）が「重く（高く）」なるのは、地球が「温暖な間氷期」の時である。", a: ["×", "〇"], exp: "間違い。氷期には軽い16Oが氷床に固定され、海に重い18Oが残るため、値は「重く」なります。" },
+    { cat: "気候", q: "海洋酸素同位体ステージ（MIS）において、現在の完新世は「MIS 1」である。", a: ["〇", "×"], exp: "正しい。奇数が間氷期、偶数が氷期に対応します。" },
+    { cat: "気候", q: "最終氷期最盛期（LGM）の世界海水準は、現在よりも約120m低かった。", a: ["〇", "×"], exp: "正しい。大量の水が陸上の氷床として存在したためです。" },
+    { cat: "気候", q: "「ヤンガー・ドライアス・イベント」は、温暖化の途中で急激に寒冷化に逆戻りした時期のことである。", a: ["〇", "×"], exp: "正しい。約1.29万年前に起こり、約1000年間続きました。" },
+    { cat: "気候", q: "ヤンガー・ドライアスの原因は、北米のアガシー湖から大量の「海水」が流出したことである。", a: ["×", "〇"], exp: "間違い。流出したのは巨大な氷河湖の「淡水」です。これが海洋循環を止めました。" },
+    { cat: "気候", q: "完新世中期の温暖期（気候最適期）には、日本で「縄文海進」と呼ばれる海水準上昇が起きた。", a: ["〇", "×"], exp: "正しい。現在より2〜3mほど海面が高く、平野部の奥まで海が入り込んでいました。" },
+
+    // --- 第5章：地殻変動・災害・その他 ---
+    { cat: "地殻・災害", q: "日本のような氷床から遠い地域では、ハイドロアイソスタシーの影響で約7000年前に海水準が現在より高くなった。", a: ["〇", "×"], exp: "正しい。融解水の重みで海底が沈降し、沿岸部が相対的に隆起・沈降する現象です。" },
+    { cat: "地殻・災害", q: "旧氷床域（スカンジナビアなど）では、氷が解けた後、地面が沈降し続けている。", a: ["×", "〇"], exp: "間違い。重しが取れた反動で、現在も激しく「隆起（リバウンド）」しています。" },
+    { cat: "地殻・災害", q: "サンゴの「マイクロアトール」の形状解析からは、過去の海水温の変化を復元できる。", a: ["×", "〇"], exp: "間違い。マイクロアトールは低潮位面で成長が止まるため、「相対的な海水準（地殻変動）」を高精度に復元できます。" },
+    { cat: "地殻・災害", q: "房総半島に見られる海岸段丘は、過去の巨大地震による隆起の繰り返しで形成された。", a: ["〇", "×"], exp: "正しい。元禄関東地震や大正関東地震などの隆起記録が刻まれています。" },
+    { cat: "地殻・災害", q: "「正断層」は、地殻に水平方向の「圧縮」の力が働いた時に形成される。", a: ["×", "〇"], exp: "間違い。正断層は引っ張られる「引張」の力、逆断層が「圧縮」の力で形成されます。" },
+    { cat: "地殻・災害", q: "日本の内陸地震の多くは「逆断層」または「横ずれ断層」型である。", a: ["〇", "×"], exp: "正しい。日本列島はプレート収束帯にあり、圧縮の力がかかっているためです。" },
+    { cat: "地殻・災害", q: "1891年の濃尾地震では、根尾谷断層に最大約6mもの段差（地震断層）が出現した。", a: ["〇", "×"], exp: "正しい。内陸直下型としては最大級の地震でした。" },
+    { cat: "地殻・災害", q: "緊急地震速報は、地震波のS波（主要動）を先に検知して、P波（初期微動）が来る前に知らせるシステムである。", a: ["×", "〇"], exp: "逆です。速いP波を先に検知して、遅くて大きいS波が来る前に知らせます。" },
+    { cat: "地殻・災害", q: "「津波てんでんこ」とは、家族が一緒に逃げることを最優先にする教訓である。", a: ["×", "〇"], exp: "間違い。「各自てんでばらばらに逃げて、自分の命を守る（共倒れを防ぐ）」という教訓です。" },
+    { cat: "地殻・災害", q: "第四紀（Quaternary）の始まりは、約258万年前である。", a: ["〇", "×"], exp: "正しい。ガウス-松山地磁気逆転境界とほぼ一致します。" },
+    { cat: "地殻・災害", q: "更新世と完新世の境界は、約1.17万年前である。", a: ["〇", "×"], exp: "正しい。ヤンガー・ドライアス期の終了をもって境界とします。" },
+    { cat: "地殻・災害", q: "約78万年前の地磁気逆転境界を「ガウス－松山境界」と呼ぶ。", a: ["×", "〇"], exp: "間違い。78万年前は「松山－ブリュンヌ境界」です。ガウス－松山は約258万年前です。" },
+    { cat: "地殻・災害", q: "日本固有の小型のゾウ化石「アケボノゾウ」は、大阪層群の下部（前期更新世）に見られる。", a: ["〇", "×"], exp: "正しい。後の時代にトウヨウゾウ、ナウマンゾウへと交代します。" },
+    { cat: "地殻・災害", q: "「ナウマンゾウ」は、温暖で湿潤な森林環境に適応したゾウである。", a: ["×", "〇"], exp: "間違い。寒冷で乾燥した草原環境に適応したゾウです。" },
+    { cat: "地殻・災害", q: "津軽海峡にある動物分布境界線を「ブラキストン線」と呼ぶ。", a: ["〇", "×"], exp: "正しい。北のマンモス動物群と南のナウマンゾウ動物群を分けます。" },
+    { cat: "地殻・災害", q: "植物の「メタセコイア」は、日本では現在も自生している。", a: ["×", "〇"], exp: "間違い。日本ではアズキ火山灰堆積後の寒冷化により絶滅しました（中国の一部に現存）。" },
+    { cat: "地殻・災害", q: "最初に出アフリカを果たした人類は「ホモ・サピエンス」である。", a: ["×", "〇"], exp: "間違い。最初に出アフリカしたのは「ホモ・エレクトス（原人）」です。" },
+    { cat: "地殻・災害", q: "現代日本人の遺伝的構成を説明する最新モデルは「三重構造モデル」である。", a: ["〇", "×"], exp: "正しい。縄文、北東アジア（弥生）、東アジア（古墳）の3集団の混血とされます。" },
+    { cat: "地殻・災害", q: "2014年の御嶽山噴火は、マグマが直接噴出するマグマ噴火であった。", a: ["×", "〇"], exp: "間違い。地下水が加熱されて爆発する「水蒸気噴火」でした。" },
+    { cat: "地殻・災害", q: "水と土砂が一体となって高速で流れ下る現象を「土石流」と呼ぶ。", a: ["〇", "×"], exp: "正しい。地すべりよりも速度が速く、破壊力が大きいです。" }
+];
+
+// --- アプリ制御ロジック ---
+let currentQuiz = [];
+let currentIndex = 0;
+let score = 0;
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function initApp() {
+    currentQuiz = shuffle([...quizData]);
+    currentIndex = 0;
+    score = 0;
+    showQuestion();
+}
+
+function showQuestion() {
+    const app = document.getElementById('app');
+    const status = document.getElementById('status');
+    
+    if (currentIndex >= currentQuiz.length) {
+        showResult();
+        return;
+    }
+
+    const qData = currentQuiz[currentIndex];
+    status.textContent = `第${currentIndex + 1}問 / 全${currentQuiz.length}問 (正解数: ${score})`;
+
+    // T/F buttons. No shuffle for position, O is left, X is right.
+    // qData.a[0] is correct.
+    let isO_correct = (qData.a[0] === "〇");
+
+    let html = `
+        <div class="card">
+            <div class="q-meta">カテゴリ: ${qData.cat}</div>
+            <div class="q-text">${qData.q}</div>
+            <div class="choices" id="choices-box">
+                <button class="choice-btn btn-o" onclick="checkAnswer(this, ${isO_correct})">〇</button>
+                <button class="choice-btn btn-x" onclick="checkAnswer(this, ${!isO_correct})">×</button>
+            </div>
+            <div class="explanation" id="exp-box">
+                <strong>正解: ${qData.a[0]}</strong><br>
+                ${qData.exp}
+                <button class="btn-next" onclick="nextQuestion()">次の問題へ</button>
+            </div>
+        </div>
+    `;
+    app.innerHTML = html;
+}
+
+function checkAnswer(btn, isCorrect) {
+    const parent = document.getElementById('choices-box');
+    const expBox = document.getElementById('exp-box');
+    
+    if (parent.style.pointerEvents === 'none') return;
+    parent.style.pointerEvents = 'none';
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        // Show correct one
+        // If btn is wrong, the other one is correct
+        for (let child of parent.children) {
+            if (child !== btn) child.classList.add('correct');
+        }
+    }
+    
+    // Dim other buttons
+    for (let child of parent.children) {
+        if (!child.classList.contains('correct') && !child.classList.contains('wrong')) {
+            child.classList.add('dimmed');
+        }
+    }
+
+    expBox.style.display = 'block';
+}
+
+function nextQuestion() {
+    currentIndex++;
+    showQuestion();
+}
+
+function showResult() {
+    const app = document.getElementById('app');
+    const percentage = Math.round((score / currentQuiz.length) * 100);
+    
+    let msg = "";
+    if (percentage >= 90) msg = "素晴らしい！完璧に近いです！";
+    else if (percentage >= 70) msg = "合格圏内です！その調子！";
+    else msg = "もう少し復習しましょう！";
+
+    app.innerHTML = `
+        <div class="card result-screen">
+            <h2>終了！</h2>
+            <div class="score-circle">
+                <span class="score-num">${score}</span>
+                <span class="score-label">/ ${currentQuiz.length}</span>
+            </div>
+            <h3>${msg}</h3>
+            <button class="btn-next" onclick="initApp()">もう一度挑戦する</button>
+        </div>
+    `;
+}
+
+window.onload = initApp;
+</script>
+</body>
+</html>

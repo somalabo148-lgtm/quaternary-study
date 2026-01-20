@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>第四紀学 試験対策ポータル</title>
+<style>
+    :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
+    body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; text-align: center; }
+    
+    header { margin-bottom: 30px; }
+    h1 { color: var(--primary); margin: 0; font-size: 1.5rem; }
+    p { color: #7f8c8d; font-size: 0.9rem; }
+
+    .menu-grid { display: grid; gap: 15px; max-width: 600px; margin: 0 auto; }
+    
+    .menu-card { 
+        background: white; padding: 20px; border-radius: 12px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-decoration: none; color: inherit; 
+        display: flex; align-items: center; transition: transform 0.2s; border-left: 6px solid var(--accent);
+    }
+    .menu-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+    
+    .icon { font-size: 2.5rem; margin-right: 15px; }
+    .text-area { text-align: left; }
+    .title { font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 4px; color: var(--primary); }
+    .desc { font-size: 0.85rem; color: #95a5a6; }
+
+    /* 色分け */
+    .c-mcq { border-left-color: #e74c3c; } /* 赤 */
+    .c-tf { border-left-color: #f1c40f; } /* 黄 */
+    .c-drill { border-left-color: #27ae60; } /* 緑 */
+    .c-vocab { border-left-color: #8e44ad; } /* 紫 */
+
+    footer { margin-top: 40px; font-size: 0.8rem; color: #bdc3c7; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>第四紀学<br>試験対策ポータル</h1>
+    <p>最終確認用学習アプリセット</p>
+</header>
+
+<div class="menu-grid">
+    <a href="mcq.html" class="menu-card c-mcq">
+        <div class="icon">✅</div>
+        <div class="text-area">
+            <span class="title">4択クイズ 100問</span>
+            <span class="desc">ランダム出題・解説付き。<br>本番形式の総仕上げに。</span>
+        </div>
+    </a>
+
+    <a href="tf.html" class="menu-card c-tf">
+        <div class="icon">⭕</div>
+        <div class="text-area">
+            <span class="title">〇×チェック 100問</span>
+            <span class="desc">サクサク解ける正誤判定。<br>知識の漏れを確認。</span>
+        </div>
+    </a>
+
+    <a href="drill.html" class="menu-card c-drill">
+        <div class="icon">📖</div>
+        <div class="text-area">
+            <span class="title">一問一答 200問</span>
+            <span class="desc">全範囲を網羅。<br>50問ごとのセット学習。</span>
+        </div>
+    </a>
+
+    <a href="vocab.html" class="menu-card c-vocab">
+        <div class="icon">🔤</div>
+        <div class="text-area">
+            <span class="title">英単語記述ドリル</span>
+            <span class="desc">スペル入力練習。<br>重要語句の英語表記対策。</span>
+        </div>
+    </a>
+</div>
+
+<footer>
+    Good luck on your exam!
+</footer>
+
+</body>
+</html>
