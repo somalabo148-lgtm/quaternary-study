@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>第四紀学 200問完全攻略</title>
+<style>
+    :root { --primary: #2c3e50; --accent: #3498db; --correct: #27ae60; --wrong: #e74c3c; --bg: #f4f7f6; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Yu Gothic", sans-serif; background-color: var(--bg); color: #333; margin: 0; padding-bottom: 60px; -webkit-text-size-adjust: 100%; }
+    
+    /* Header & Nav */
+    header { background: var(--primary); color: white; padding: 15px 10px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    h1 { margin: 0; font-size: 1.2rem; }
+    .nav-tabs { display: flex; justify-content: space-around; background: #fff; padding: 0; margin: 0; list-style: none; border-bottom: 1px solid #ddd; }
+    .nav-item { flex: 1; text-align: center; padding: 12px 5px; cursor: pointer; font-weight: bold; font-size: 0.9rem; color: #7f8c8d; border-bottom: 3px solid transparent; transition: 0.3s; }
+    .nav-item.active { color: var(--accent); border-bottom-color: var(--accent); background: #fdfdfd; }
+    
+    /* Progress Bar */
+    .progress-container { background: #e0e0e0; height: 6px; width: 100%; position: sticky; top: 54px; z-index: 99; }
+    .progress-bar { height: 100%; background: var(--correct); width: 0%; transition: width 0.3s; }
+    .score-display { text-align: center; padding: 10px; font-weight: bold; color: var(--primary); font-size: 0.9rem; background: #fff; border-bottom: 1px solid #eee; }
+
+    /* Question Cards */
+    .container { max-width: 800px; margin: 0 auto; padding: 15px; }
+    .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; overflow: hidden; border-left: 5px solid transparent; transition: transform 0.1s; }
+    .card.solved-correct { border-left-color: var(--correct); background-color: #fafffb; }
+    .card.solved-wrong { border-left-color: var(--wrong); background-color: #fff5f5; }
+    
+    .q-box { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; }
+    .q-text { font-size: 1rem; line-height: 1.5; width: 100%; }
+    .q-num { font-weight: bold; color: var(--accent); margin-right: 8px; display: inline-block; min-width: 35px; }
+    .toggle-icon { font-weight: bold; color: #ccc; margin-left: 10px; }
+
+    .a-box { display: none; padding: 0 15px 15px 15px; border-top: 1px dashed #eee; animation: fadeIn 0.2s; }
+    .a-text { margin: 10px 0; font-weight: bold; color: #2c3e50; font-size: 1.1rem; }
+    .a-sub { font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px; }
+
+    /* Action Buttons */
+    .actions { display: flex; gap: 10px; margin-top: 10px; }
+    .btn { flex: 1; padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: opacity 0.2s; color: white; }
+    .btn:active { transform: scale(0.98); }
+    .btn-show { background: var(--accent); width: 100%; margin-top: 5px; }
+    .btn-ok { background: var(--correct); }
+    .btn-ng { background: var(--wrong); }
+    
+    /* Reset Button */
+    .reset-area { text-align: center; margin: 30px 0; }
+    .btn-reset { background: #95a5a6; color: white; padding: 8px 20px; border: none; border-radius: 20px; font-size: 0.8rem; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* Content Visibility */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>第四紀学 200問完全攻略</h1>
+</header>
+
+<ul class="nav-tabs">
+    <li class="nav-item active" onclick="switchTab(1)">Part 1<br><span style="font-size:0.7em">基礎・気候</span></li>
+    <li class="nav-item" onclick="switchTab(2)">Part 2<br><span style="font-size:0.7em">テフラ・調査</span></li>
+    <li class="nav-item" onclick="switchTab(3)">Part 3<br><span style="font-size:0.7em">生物・災害</span></li>
+    <li class="nav-item" onclick="switchTab(4)">Part 4<br><span style="font-size:0.7em">英単語・総</span></li>
+</ul>
+
+<div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
+<div class="score-display" id="scoreText">正解率: 0 / 50 (0%)</div>
+
+<div class="container">
+    <div id="content-1" class="tab-content active"></div>
+    <div id="content-2" class="tab-content"></div>
+    <div id="content-3" class="tab-content"></div>
+    <div id="content-4" class="tab-content"></div>
+    
+    <div class="reset-area">
+        <button class="btn-reset" onclick="resetCurrentPart()">このパートの記録をリセット</button>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// 問題データ (全200問)
+// ==========================================
+const allQuestions = [
+    // --- Part 1 (1-50) ---
+    { p:1, q:"第四紀（Quaternary）は何万年前から現在までか。", a:"約258万年前 (2.58 Ma)" },
+    { p:1, q:"第四紀を2つに分けたとき、古い方の名称は。", a:"更新世 (Pleistocene)" },
+    { p:1, q:"更新世と完新世の境界は何万年前か。", a:"約1.17万年前" },
+    { p:1, q:"第四紀の下限を決める根拠となった古地磁気境界は。", a:"ガウス／マツヤマ境界" },
+    { p:1, q:"「年(Date)」と「年代(Age)」の違いは。", a:"年＝時点、年代＝期間・幅" },
+    { p:1, q:"地球の大気圏外における太陽定数は約何W/m²か。", a:"約1366 W/m²" },
+    { p:1, q:"地球の平均アルベド（反射率）は約何割か。", a:"約3割 (30%)" },
+    { p:1, q:"氷床拡大→反射増→寒冷化 という正のフィードバックを何と呼ぶか。", a:"アイス・アルベド・フィードバック" },
+    { p:1, q:"赤道上昇・緯度30度下降の大気循環は。", a:"ハドレー循環" },
+    { p:1, q:"中緯度(30-60度)の偏西風に関連する循環は。", a:"フェレル循環" },
+    { p:1, q:"深層海洋循環（熱塩循環）の時間スケールは。", a:"約1000〜2000年" },
+    { p:1, q:"北大西洋深層水(NADW)の主な沈み込み場所は。", a:"グリーンランド沖" },
+    { p:1, q:"ミランコビッチ・サイクルの3要素は。", a:"離心率、地軸の傾き、歳差運動" },
+    { p:1, q:"離心率の周期は約何万年か。", a:"約10万年" },
+    { p:1, q:"地軸の傾きの周期は約何万年か。", a:"約4.1万年" },
+    { p:1, q:"歳差運動の周期は約何万年か。", a:"約2.3万年 (1.9万年)" },
+    { p:1, q:"地軸の傾きが大きいと高緯度の夏の日射量はどうなるか。", a:"増加する (氷が融けやすい)" },
+    { p:1, q:"約100万年前に卓越周期が4万年から10万年に変わったことを何と呼ぶか。", a:"中更新世気候変遷 (MPT)" },
+    { p:1, q:"最終氷期中の数千年規模の急激な気候変動サイクルは。", a:"ダンスガード・オシュガーサイクル (D-O)" },
+    { p:1, q:"D-Oサイクルの温暖期と寒冷期をそれぞれ何と呼ぶか。", a:"亜間氷期・亜氷期" },
+    { p:1, q:"D-Oサイクルが束になり極端な寒冷化に至るサイクルは。", a:"ボンド・サイクル" },
+    { p:1, q:"ボンド・サイクル末期に氷山が大西洋へ流出したイベントは。", a:"ハインリッヒ・イベント" },
+    { p:1, q:"ハインリッヒ・イベントで形成される堆積層は。", a:"IRD層 (氷河性砕屑物)" },
+    { p:1, q:"北半球の寒冷化と逆位相で南極が温暖化する現象は。", a:"バイポーラ・シーソー (南北シーソー)" },
+    { p:1, q:"最終氷期最盛期(LGM)は約何万年前か。", a:"約2万年前" },
+    { p:1, q:"LGMの海水準低下量は約何メートルか。", a:"約120m" },
+    { p:1, q:"約1.29万年前の急激な寒の戻りイベントは。", a:"ヤンガー・ドライアス・イベント" },
+    { p:1, q:"ヤンガー・ドライアスの原因となった北米の淡水湖は。", a:"アガシー湖" },
+    { p:1, q:"ヤンガー・ドライアスの寒冷化メカニズムは。", a:"淡水流入による深層循環の停止" },
+    { p:1, q:"完新世の気候最適期(ヒプシサーマル)は約何年前か。", a:"約6000年前 (9500-5500年前)" },
+    { p:1, q:"気候最適期の日本の海進現象は。", a:"縄文海進" },
+    { p:1, q:"14〜19世紀の世界的な寒冷期は。", a:"小氷期 (Little Ice Age)" },
+    { p:1, q:"小氷期中の太陽黒点極小期(1645-1715)は。", a:"マウンダー極小期" },
+    { p:1, q:"諏訪湖の御神渡り記録から復元された気象データは。", a:"冬の気温" },
+    { p:1, q:"火山噴火による寒冷化は噴煙がどこに達すると顕著か。", a:"成層圏" },
+    { p:1, q:"K-Ar法の主な測定対象は。", a:"火山岩・鉱物" },
+    { p:1, q:"C14は大気上層で中性子と何が反応してできるか。", a:"窒素 (N14)" },
+    { p:1, q:"C14の物理学的半減期は約何年か。", a:"約5730年" },
+    { p:1, q:"C14年代測定の慣習的半減期(リビー)は何年か。", a:"5568年" },
+    { p:1, q:"C14法の測定限界(上限)は過去約何万年か。", a:"約5万年" },
+    { p:1, q:"微量試料で測定可能な現在の主流な方法は。", a:"AMS法 (加速器質量分析)" },
+    { p:1, q:"C14年代を暦年代に直す補正を何と呼ぶか。", a:"暦年較正 (Calibration)" },
+    { p:1, q:"暦年較正が必要な理由は。", a:"過去の大気中C14濃度が一定でないため" },
+    { p:1, q:"海洋生物の年代が古く出る現象は。", a:"海洋リザーバー効果" },
+    { p:1, q:"リザーバー効果によるズレの目安は何年か。", a:"約400年" },
+    { p:1, q:"広域テフラを鍵層とする年代決定法は。", a:"テフラ編年" },
+    { p:1, q:"約78万年前の地磁気逆転境界は。", a:"松山－ブリュンヌ境界" },
+    { p:1, q:"酸素同位体層序の標準曲線を何と呼ぶか。", a:"LR04カーブ (SPECMAP)" },
+    { p:1, q:"年輪等で作られたC14補正用データセットは。", a:"IntCal (較正曲線)" },
+    { p:1, q:"C14年代値に付く単位「BP」の起点は西暦何年か。", a:"1950年" },
+
+    // --- Part 2 (51-100) ---
+    { p:2, q:"噴煙が成層圏まで達する大規模噴火様式は。", a:"プリニー式噴火" },
+    { p:2, q:"マグマが水と接触して爆発する噴火様式は。", a:"水蒸気プリニー式" },
+    { p:2, q:"噴火分類のF-D図の軸は。", a:"粉砕度(F)と拡散度(D)" },
+    { p:2, q:"火砕流が熱で再融着してできた岩石は。", a:"溶結凝灰岩" },
+    { p:2, q:"火砕流より密度が低く横に広がる流れは。", a:"ベースサージ" },
+    { p:2, q:"テフラ同定の3要素：層位、鉱物組成、あと1つは。", a:"屈折率" },
+    { p:2, q:"火山灰アトラスの「opx」は何の鉱物か。", a:"斜方輝石" },
+    { p:2, q:"火山灰アトラスの「ho」は何の鉱物か。", a:"角閃石" },
+    { p:2, q:"火山灰アトラスの「qt」は何の鉱物か。", a:"石英" },
+    { p:2, q:"広域テフラ「AT」の名称は。", a:"姶良Tn火山灰" },
+    { p:2, q:"広域テフラ「K-Ah」の名称は。", a:"鬼界アカホヤ火山灰" },
+    { p:2, q:"広域テフラ「Aso-4」の名称は。", a:"阿蘇4火山灰" },
+    { p:2, q:"溝を掘って断層を観察する調査法は。", a:"トレンチ調査" },
+    { p:2, q:"トレンチ調査の主な弱点は。", a:"深さが数mに限られる" },
+    { p:2, q:"深部まで掘れるが高額な調査法は。", a:"機械式ボーリング" },
+    { p:2, q:"人力で運べる簡易掘削機(〜10m)は。", a:"ハンドコアラー" },
+    { p:2, q:"地層を乱さず幅広試料を取れるカッター式道具は。", a:"ハンディジオスライサー" },
+    { p:2, q:"堆積構造の観察に適しているのはコアラーかジオスライサーか。", a:"ハンディジオスライサー" },
+    { p:2, q:"コア記載の鉄則は。", a:"「解釈」ではなく「事実」を書く" },
+    { p:2, q:"非破壊で内部構造を見る分析は。", a:"CTスキャン" },
+    { p:2, q:"元素組成を連続スキャンする装置は。", a:"ITRAX (コアスキャナー)" },
+    { p:2, q:"海か湖かの判定に有効な微化石は。", a:"珪藻" },
+    { p:2, q:"粒度分析の前処理で有機物除去に使う薬品は。", a:"過酸化水素水" },
+    { p:2, q:"大陸移動説を提唱した人物は。", a:"ウェゲナー" },
+    { p:2, q:"海洋底拡大説の証拠となった磁気記録は。", a:"古地磁気の縞模様" },
+    { p:2, q:"地殻がマントルに浮いている釣り合い状態は。", a:"アイソスタシー" },
+    { p:2, q:"プレート運動の主動力(沈み込みが引く力)は。", a:"スラブプル" },
+    { p:2, q:"マントル深部の対流を説明する理論は。", a:"プルームテクトニクス" },
+    { p:2, q:"核-マントル境界からの巨大上昇流は。", a:"ホットプルーム (スーパープルーム)" },
+    { p:2, q:"引張応力で生じ、上盤が下がる断層は。", a:"正断層" },
+    { p:2, q:"圧縮応力で生じ、上盤が上がる断層は。", a:"逆断層" },
+    { p:2, q:"剪断応力で水平にずれる断層は。", a:"横ずれ断層" },
+    { p:2, q:"地表に出現した断層のズレを何と呼ぶか。", a:"地震断層 (地表地震断層)" },
+    { p:2, q:"地下深部の破壊面そのものは。", a:"震源断層" },
+    { p:2, q:"サンゴのマイクロアトールは何の復元に使うか。", a:"海水準 (垂直地殻変動)" },
+    { p:2, q:"近畿の鮮新世末〜中期更新世の地層群は。", a:"大阪層群" },
+    { p:2, q:"大阪層群の海成粘土層の略号は。", a:"Ma層" },
+    { p:2, q:"大阪層群の約85万年前の鍵層は。", a:"アズキ火山灰" },
+    { p:2, q:"アズキ火山灰はM-B境界より上か下か。", a:"下 (古い)" },
+    { p:2, q:"大阪層群下部の象徴的な針葉樹は。", a:"メタセコイア" },
+    { p:2, q:"メタセコイア絶滅層準はアズキ火山灰より上か下か。", a:"上 (少し新しい)" },
+    { p:2, q:"大阪層群下部の日本固有のゾウは。", a:"アケボノゾウ (シガゾウ)" },
+    { p:2, q:"中期更新世前半の大陸系森林性ゾウは。", a:"トウヨウゾウ" },
+    { p:2, q:"中期更新世後半以降の寒冷草原性ゾウは。", a:"ナウマンゾウ" },
+    { p:2, q:"間氷期を示す代表的な広葉樹花粉は。", a:"ブナ (コナラ)" },
+    { p:2, q:"氷期を示す代表的な針葉樹花粉は。", a:"トウヒ (マツ・ツガ)" },
+    { p:2, q:"現在の大阪平野の地下にある海成層の海の名は。", a:"河内湾 (難波の海)" },
+    { p:2, q:"松山期中の約100万年前の正磁極亜帯は。", a:"ハラミヨ亜帯" },
+    { p:2, q:"大阪層群のMa層は氷期・間氷期のどちらに堆積したか。", a:"間氷期 (海進期)" },
+    
+    // --- Part 3 (101-150) ---
+    { p:3, q:"人類とチンパンジーの分岐は約何年前か。", a:"約700万年前" },
+    { p:3, q:"人類の定義：脳の巨大化ともう一つは。", a:"直立二足歩行" },
+    { p:3, q:"直立二足歩行に伴い縮小した歯は。", a:"犬歯" },
+    { p:3, q:"植物食に特化して顎が巨大化した猿人は。", a:"頑丈型猿人 (パラントロプス)" },
+    { p:3, q:"我々の祖先である華奢な猿人グループは。", a:"アウストラロピテクス類 (華奢型)" },
+    { p:3, q:"最初に出アフリカを果たした人類は。", a:"ホモ・エレクトス" },
+    { p:3, q:"エレクトスが作った左右対称の石器は。", a:"ハンドアックス" },
+    { p:3, q:"ヨーロッパ中心に繁栄した旧人は。", a:"ネアンデルタール人" },
+    { p:3, q:"ネアンデルタール人の石器文化は。", a:"ムスティエ文化" },
+    { p:3, q:"ホモ・サピエンス誕生は約何万年前か。", a:"約20〜30万年前" },
+    { p:3, q:"現代人のゲノムに含まれる旧人の遺伝子は誰のものか。", a:"ネアンデルタール人 (デニソワ人)" },
+    { p:3, q:"日本人の起源：従来の縄文+弥生説は。", a:"二重構造モデル" },
+    { p:3, q:"日本人の起源：最新の3集団混血説は。", a:"三重構造モデル" },
+    { p:3, q:"三重構造モデル：弥生時代の流入集団の生業は。", a:"稲作 (雑穀農耕)" },
+    { p:3, q:"三重構造モデル：古墳時代に流入した集団は。", a:"東アジア系祖先 (漢民族に近い)" },
+    { p:3, q:"日本を含む北半球最大の植物界は。", a:"全北植物界" },
+    { p:3, q:"南ア南端の固有種が多い植物界は。", a:"ケープ植物界" },
+    { p:3, q:"アジアとオーストラリアの動物境界線は。", a:"ウォーレス線" },
+    { p:3, q:"ウォーレス線東側の混在領域は。", a:"ウォーラシア" },
+    { p:3, q:"津軽海峡の動物分布境界線は。", a:"ブラキストン線" },
+    { p:3, q:"ブラキストン線以北の動物群は。", a:"マンモス動物群" },
+    { p:3, q:"トカラ列島の生物分布境界線は。", a:"渡瀬線" },
+    { p:3, q:"西日本の低地(丘陵帯)の森林は。", a:"常緑広葉樹林 (照葉樹林)" },
+    { p:3, q:"日本の山地帯の森林は。", a:"落葉広葉樹林 (夏緑樹林)" },
+    { p:3, q:"日本の亜高山帯の森林は。", a:"常緑針葉樹林" },
+    { p:3, q:"日本の高山帯の代表的樹木は。", a:"ハイマツ" },
+    { p:3, q:"日本海側の多雪地帯に見られる植生帯の欠如現象は。", a:"偽高山帯" },
+    { p:3, q:"山岳氷河による半椀状の窪地は。", a:"カール (圏谷)" },
+    { p:3, q:"氷河によるU字型の谷は。", a:"氷食谷" },
+    { p:3, q:"氷河の削り残しの鋭い尾根は。", a:"アレート (刃嶺)" },
+    { p:3, q:"氷河の削り残しの鋭い山頂は。", a:"ホーン (ホルン)" },
+    { p:3, q:"氷河が運んだ岩屑の堤防状地形は。", a:"モレーン" },
+    { p:3, q:"氷河底の融水流路跡(蛇行堤)は。", a:"エスカー" },
+    { p:3, q:"流線型のスプーン状の丘は。", a:"ドラムリン" },
+    { p:3, q:"埋没氷塊が融けてできた湖は。", a:"ケトル" },
+    { p:3, q:"融氷水が作った扇状の平野は。", a:"アウトウォッシュプレーン" },
+    { p:3, q:"ハザードが人間社会に被害を及ぼすことを何と呼ぶか。", a:"自然災害" },
+    { p:3, q:"緊急地震速報はP波・S波どっちを検知するか。", a:"P波" },
+    { p:3, q:"2011東北沖津波の高さは過去最大クラスと比べどうだったか。", a:"上回っていた" },
+    { p:3, q:"「各自てんでばらばらに逃げよ」という教訓は。", a:"津波てんでんこ" },
+    { p:3, q:"高温ガスと砕屑物の高速流下現象は。", a:"火砕流" },
+    { p:3, q:"地下水が加熱されて爆発する噴火は。", a:"水蒸気噴火" },
+    { p:3, q:"決壊した堤防から広がる扇状の堆積物は。", a:"決壊堆積物 (クレバススプレー)" },
+    { p:3, q:"本流の水位上昇で支流が溢れる現象は。", a:"バックウォーター現象" },
+    { p:3, q:"水と土砂が一体で流下する災害は。", a:"土石流" },
+    { p:3, q:"斜面の土塊が滑り落ちる現象は。", a:"地すべり" },
+    { p:3, q:"地震隆起でできた階段状地形は。", a:"海岸段丘" },
+    { p:3, q:"地震隆起の証拠となる岩肌の生物遺骸は。", a:"ヤツシロガイ (隆起生物遺骸)" },
+    { p:3, q:"サンゴが作る海水準指標となる形状は。", a:"マイクロアトール" },
+    { p:3, q:"地震で地盤が液体状になる現象は。", a:"液状化現象" },
+
+    // --- Part 4 (151-200) ---
+    { p:4, q:"【英】年代層序", a:"Chronostratigraphy" },
+    { p:4, q:"【英】気候層序", a:"Climatostratigraphy" },
+    { p:4, q:"【英】編年", a:"Chronology" },
+    { p:4, q:"【英】放射性炭素年代測定", a:"Radiocarbon dating" },
+    { p:4, q:"【英】暦年較正年代", a:"Calibrated age" },
+    { p:4, q:"【英】制約付き年代", a:"Constrained age" },
+    { p:4, q:"【英】テフラ", a:"Tephra" },
+    { p:4, q:"【英】軽石", a:"Pumice" },
+    { p:4, q:"【英】スコリア", a:"Scoria" },
+    { p:4, q:"【英】火山灰", a:"Ash (Volcanic ash)" },
+    { p:4, q:"【英】凝灰岩", a:"Tuff" },
+    { p:4, q:"【英】鍵層", a:"Key bed" },
+    { p:4, q:"【英】プレート間地震", a:"Interplate earthquake" },
+    { p:4, q:"【英】プレート内地震", a:"Intraplate earthquake" },
+    { p:4, q:"【英】正断層", a:"Normal fault" },
+    { p:4, q:"【英】逆断層", a:"Reverse fault" },
+    { p:4, q:"【英】横ずれ断層", a:"Strike-slip fault" },
+    { p:4, q:"松山期中の179-164万年前の正磁極亜帯は。", a:"オルドバイ亜帯" },
+    { p:4, q:"大阪層群最下部の特徴的な色の火山灰は。", a:"ピンク火山灰" },
+    { p:4, q:"メタセコイア絶滅層準はアズキ火山灰より上か下か。", a:"上 (新しい)" },
+    { p:4, q:"第四紀初頭(2.58Ma)の地磁気境界は。", a:"ガウス－松山境界" },
+    { p:4, q:"気象現象が起こる大気の最下層は。", a:"対流圏" },
+    { p:4, q:"オゾン層があり気温が上昇する層は。", a:"成層圏" },
+    { p:4, q:"成層圏の上にある気温が低下する層は。", a:"中間圏" },
+    { p:4, q:"オーロラが発生する最上層は。", a:"熱圏" },
+    { p:4, q:"電波通信に利用される電離領域は。", a:"電離圏" },
+    { p:4, q:"1891年の内陸最大級の地震は。", a:"濃尾地震" },
+    { p:4, q:"濃尾地震で出現した有名な断層は。", a:"根尾谷断層" },
+    { p:4, q:"1703年元禄関東地震で形成された段丘は。", a:"元禄段丘" },
+    { p:4, q:"海域断層調査で用いる音波手法は。", a:"音波探査" },
+    { p:4, q:"活断層調査で最初に行う地形判読対象は。", a:"変動地形 (リニアメント)" },
+    { p:4, q:"氷期に氷床周辺がマントル流動で隆起する現象は。", a:"バルジ" },
+    { p:4, q:"間氷期にバルジ地域はどう動くか。", a:"沈降する" },
+    { p:4, q:"氷床遠方で水の重みにより海底が沈む現象は。", a:"ハイドロアイソスタシー" },
+    { p:4, q:"縄文海進の原因の一つは何か。", a:"ハイドロアイソスタシー" },
+    { p:4, q:"MISにおいてLGM(最終氷期最盛期)の番号は。", a:"MIS 2" },
+    { p:4, q:"MISにおいて最終間氷期の番号は。", a:"MIS 5e" },
+    { p:4, q:"ホモ・ハビリスの礫器文化は。", a:"オルドワン石器 (チョッパー)" },
+    { p:4, q:"北京原人はホモ属の何に分類されるか。", a:"ホモ・エレクトス" },
+    { p:4, q:"サピエンスの石を薄く剥がす石器技法は。", a:"石刃技法" },
+    { p:4, q:"サピエンス特有の動物素材の道具は。", a:"骨角器" },
+    { p:4, q:"【英】カンラン石", a:"Olivine" },
+    { p:4, q:"【英】斜方輝石", a:"Orthopyroxene" },
+    { p:4, q:"【英】単斜輝石", a:"Clinopyroxene" },
+    { p:4, q:"【英】角閃石", a:"Hornblende" },
+    { p:4, q:"【英】黒雲母", a:"Biotite" },
+    { p:4, q:"【英】石英", a:"Quartz" },
+    { p:4, q:"【英】火山ガラス", a:"Volcanic glass" },
+    { p:4, q:"古環境指標データの総称(カタカナ)は。", a:"プロキシデータ" },
+    { p:4, q:"東北日本は何プレートの下に何が沈み込むか。", a:"北米の下に太平洋プレート" }
+];
+
+// ==========================================
+// アプリ機能の実装
+// ==========================================
+let currentPart = 1;
+// ユーザーの解答状況 { "q-0": true, "q-1": false ... }
+let userStatus = JSON.parse(localStorage.getItem('quaternary_status_v2')) || {};
+
+function saveStatus() {
+    localStorage.setItem('quaternary_status_v2', JSON.stringify(userStatus));
+    updateProgress();
+}
+
+function switchTab(part) {
+    currentPart = part;
+    // タブUI更新
+    document.querySelectorAll('.nav-item').forEach((el, idx) => {
+        el.classList.toggle('active', idx + 1 === part);
+    });
+    // コンテンツ表示切替
+    document.querySelectorAll('.tab-content').forEach((el, idx) => {
+        el.classList.toggle('active', idx + 1 === part);
+    });
+    renderQuestions(part);
+    updateProgress();
+}
+
+function renderQuestions(part) {
+    const container = document.getElementById(`content-${part}`);
+    if (container.innerHTML !== "") return; // 描画済みなら何もしない
+
+    const partQuestions = allQuestions.filter(q => q.p === part);
+    
+    let html = "";
+    partQuestions.forEach((item, index) => {
+        // 全体配列の中でのインデックス（ユニークID用）
+        const globalIndex = allQuestions.indexOf(item);
+        const status = userStatus[`q-${globalIndex}`];
+        
+        let cardClass = "";
+        if (status === true) cardClass = "solved-correct";
+        if (status === false) cardClass = "solved-wrong";
+
+        html += `
+        <div class="card ${cardClass}" id="card-${globalIndex}">
+            <div class="q-box" onclick="toggleAnswer(${globalIndex})">
+                <div class="q-text">
+                    <span class="q-num">Q${index + 1}</span> ${item.q}
+                </div>
+                <div class="toggle-icon">▼</div>
+            </div>
+            <div class="a-box" id="ans-${globalIndex}">
+                <div class="a-sub">答え</div>
+                <div class="a-text">${item.a}</div>
+                <div class="actions">
+                    <button class="btn btn-ok" onclick="markAnswer(${globalIndex}, true)">覚えた！</button>
+                    <button class="btn btn-ng" onclick="markAnswer(${globalIndex}, false)">まだ</button>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+function toggleAnswer(id) {
+    const ansBox = document.getElementById(`ans-${id}`);
+    if (ansBox.style.display === "block") {
+        ansBox.style.display = "none";
+    } else {
+        ansBox.style.display = "block";
+    }
+}
+
+function markAnswer(id, isCorrect) {
+    userStatus[`q-${id}`] = isCorrect;
+    const card = document.getElementById(`card-${id}`);
+    
+    // クラス更新
+    card.classList.remove('solved-correct', 'solved-wrong');
+    if (isCorrect) {
+        card.classList.add('solved-correct');
+    } else {
+        card.classList.add('solved-wrong');
+    }
+    
+    // 閉じる
+    // setTimeout(() => {
+    //     document.getElementById(`ans-${id}`).style.display = "none";
+    // }, 300);
+    
+    saveStatus();
+}
+
+function updateProgress() {
+    const partQuestions = allQuestions.filter(q => q.p === currentPart);
+    const total = partQuestions.length;
+    let correctCount = 0;
+    
+    partQuestions.forEach(item => {
+        const globalIndex = allQuestions.indexOf(item);
+        if (userStatus[`q-${globalIndex}`] === true) {
+            correctCount++;
+        }
+    });
+    
+    const percentage = Math.round((correctCount / total) * 100);
+    document.getElementById('progressBar').style.width = `${percentage}%`;
+    document.getElementById('scoreText').textContent = `Part ${currentPart} 正解率: ${correctCount} / ${total} (${percentage}%)`;
+}
+
+function resetCurrentPart() {
+    if(!confirm("このパートの記録をリセットしますか？")) return;
+    
+    const partQuestions = allQuestions.filter(q => q.p === currentPart);
+    partQuestions.forEach(item => {
+        const globalIndex = allQuestions.indexOf(item);
+        delete userStatus[`q-${globalIndex}`];
+        const card = document.getElementById(`card-${globalIndex}`);
+        if(card) card.classList.remove('solved-correct', 'solved-wrong');
+    });
+    
+    saveStatus();
+}
+
+// 初期化
+window.onload = function() {
+    switchTab(1);
+};
+
+</script>
+</body>
+</html>
